@@ -41,3 +41,18 @@ sub fix {
 }
 
 1;
+
+=head1 NAME
+
+    Catmandu::Fix::ebi_dbLinks - convert the nested hash from ebi in nice form
+    and provide the url
+
+=head1 SYNOPSIS
+
+    use Catmandu::Fix qw(ebi_dbLinks);
+    
+    my $data = { ...}; 
+    my $fixer = Catmandu::Fix->new(fixes => ['ebi_dbLinks()']);
+    $fixer->fix($data);
+
+=cut

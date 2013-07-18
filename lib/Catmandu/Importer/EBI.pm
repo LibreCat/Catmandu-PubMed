@@ -7,10 +7,11 @@ use XML::Simple qw(XMLin);
 
 with 'Catmandu::Importer';
 
-use constant BASE_URL => 'http://www.ebi.ac.uk/europepmc/webservices/rest/MED/';
+use constant BASE_URL => 'http://www.ebi.ac.uk/europepmc/webservices/rest';
 
 has base => (is => 'ro', default => sub { return BASE_URL; });
-has id => (is => 'ro', required => 1);
+has query => (is => 'ro', required => 1);
+has db_links => (is => 'ro');
 
 # Returns the raw response object.
 sub _request {
@@ -45,7 +46,11 @@ sub _call {
 
   # construct the url
   my $url = $self->base;
-  $url .= $self->id ."/databaseLinks";
+  if ($self->db_links) {
+    $url .= '/MED/' . $self->query . '/databaseLinks';
+  } else {
+    $url .= '/search/query=' . $self->query;
+  }
 
   # http get the url.
   my $res = $self->_request($url);
@@ -60,7 +65,7 @@ sub _get_record {
   # fetch the xml response and hashify it.
   my $xml = $self->_call;
   my $hash = $self->_hashify($xml);
-
+    
   # return a reference to a hash.
   return $hash;
 }
@@ -72,12 +77,12 @@ sub generator {
   my $return = 1;
 
   return sub {
-	# hack to make iterator stop.
-	if ($return) {
-		$return = 0;
-		return $self->_get_record;
-	}
-	return undef;
+  # hack to make iterator stop.
+  if ($return) {
+    $return = 0;
+    return $self->_get_record;
+  }
+  return undef;
   };
 }
 
