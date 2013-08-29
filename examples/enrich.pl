@@ -3,75 +3,89 @@
 use lib qw(../lib);
 use Catmandu::Sane;
 use Catmandu -load;
+use Catmandu::Fix qw(ebi_filter ebi_dbLinks);
 use Catmandu::Importer::EBI;
 use Catmandu::Store::MongoDB;
-
+use YAML;
 Catmandu->load;
 Catmandu->config;
 
-my $searchBag = Catmandu->store('search')->bag('publicationItem');
+# my $searchBag = Catmandu->store('search')->bag('publicationItem');
 my $bag = Catmandu::Store::MongoDB->new(database_name => 'europmc');
-my $pubmed;
+my $dbLinks_fixer = Catmandu::Fix->new(fixes => ['ebi_dbLinks()']);
+my $ebi_fixer = Catmandu::Fix->new(fixes => ['ebi_filter()']);
 
-
-sub _get_references {
-	my ($pmid, $mod) = @_;
+sub _get_data {
+	my ($pmid, $mod, $db) = @_;
 	
-	my $references;
+	my $results;
 	my $page = 1;
 	my $pages = 40; # this means a maximum of thousand items
 	while($page <= $pages) {
-		my $ref_imp = Catmandu::Importer::EBI->new(
+		my $imp = Catmandu::Importer::EBI->new(
 			query => $pmid, 
 			module => $mod,
-			page => $page;
+			db => $db,
+			page => $page,
 			);
-		push @results, $ref_imp->first->{citationList};
+		push @{$results}, $imp->first;
 		$page++;
-		next if $page > 2;
-			use integer;
-			$pages = ($ref_imp->first->{hitCount}/25)+1;
-	}
-
-	return @references;
+	 	next if $page > 2;
+	 		#$results->{total} = $imp->first->{hitCount};
+	 		use integer;
+	 		$pages = ($imp->first->{hitCount}/25)+1;
+	 }
+	return $results;
 }
 
-$searchBag->each( sub {
-	my $pub = $_[0];
-	if ($pub->{pubmedID}) {
-		push @[$pubmed->{records}], { pub => $pub->{_id}, pubmed => $pub->{pubmedID} };
-	}
-});
+# $searchBag->each( sub {
+# 	my $pub = $_[0];
+# 	if ($pub->{pubmedID}) {
+# 		push @[$pubmed->{records}], { pub => $pub->{_id}, pmid => $pub->{pubmedID} };
+# 	}
+# });
 
-foreach my $item ( @{ $pubmend->{records} } ) {
-	my $pmid = $item->{pubmedID};
-	my $data;
+my $pubmed = {
+	records => [
+	{pub => '1', pmid => '12368864'},
+	{pub => '2', pmid => '19155533'},
+	{pub => '3', pmid => '22246381'},
+	]
+};
+
+foreach my $item ( @{ $pubmed->{records} } ) {
+	
+	my $pmid = $item->{pmid};
+	my $data = { _id => $item->{pub}, pmid => $pmid};
 	my $basic_imp = Catmandu::Importer::EBI->new(
 		query => $pmid, 
 		module => 'search',
-		fix => 'ebi_filter()',
 		);
-	$data = { _id => $item->{pub}, pmid => $pmid};
 
-	given ($basic_imp->first) {
-		when ($_->{hasReferences} eq 'Y') {
-			my $references = _get_data($pmid, 'reference');
-			$data->{references} = $references;
-		}
-		when ($_->{citedByCount} ne '0') {
-			my $citations = _get_data($pmid, 'citation');
-			$data->{citations} = $citations;
-		}
-		when ($_->{hasDbCrossReferences} eq 'Y') {
-			my $dbLinks = _get_data($pmid, 'databaseLinks');
-			$data->{databaseLinks} = $dbLinks;
-		}
-		default {
-			#say "Nothing found for $item->{pubmedID}" if $opt_v;
-		}
+	my $basic_info = $ebi_fixer->fix($basic_imp->first);
+	
+	if ($basic_info->{hasReferences} eq 'Y') {
+		my $references = _get_data($pmid, 'references');
+		#print Dump $references,
+		$data->{references} = $references;
+	}
+	
+	if ($basic_info->{citedByCount} ne '0') {
+		my $citations = _get_data($pmid, 'citations');
+		#print Dump $citations,
+		$data->{citations} = $citations;
 	}
 
+	if ($basic_info->{hasDbCrossReferences} eq 'Y') {
+#			foreach my $db ( @{$_->{dbCrossReferenceList}} ) {
+#				my $dbLinks = $dbLinks_fixer->fix( _get_data($pmid, 'databaseLinks', $db->{dbName}) );
+#				$data->{databaseLinks} = $dbLinks;
+#			}
+	}
+	print Dump $data;
+
 }
+
 =head1 NAME
 
 	the new amazing enricher

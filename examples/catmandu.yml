@@ -1,7 +1,0 @@
-importer:
-  default:
-    package: EBI
-    options:
-      fix:
-        - 'ebi_enrich'
-        - 'ebi_dblinks()'

@@ -6,11 +6,12 @@ use Moo;
 sub fix {
 	my ($self, $ebi) = @_;
 	
+  my $hash = $ebi->{resultList}->{result};
   my $data;
   foreach (qw(pmid pmcid hasReferences citedByCount
       hasDbCrossReferences dbCrossReferenceList hasTextMinedTerms 
       hasReferences inEPMC inPMC)) {
-    $data->{$_} = $ebi->{$_} if $ebi->{$_};
+    $data->{$_} = $hash->{$_} if $hash->{$_};
   }
   return $data;
 
