@@ -2,7 +2,6 @@ package Catmandu::Fix::ebi_dbLinks;
 
 use Catmandu::Sane;
 use Moo;
-use Switch;
 
 my $DB_LINKS = {
 	CHEMBL => 'https://www.ebi.ac.uk/chembl/target/inspect/',
@@ -45,13 +44,13 @@ sub fix {
 =head1 NAME
 
     Catmandu::Fix::ebi_dbLinks - convert the nested hash from ebi in nice form
-    and provide the url
+    and provide the url to the database entry
 
 =head1 SYNOPSIS
 
     use Catmandu::Fix qw(ebi_dbLinks);
     
-    my $data = { ...}; 
+    my $data = { ... }; 
     my $fixer = Catmandu::Fix->new(fixes => ['ebi_dbLinks()']);
     $fixer->fix($data);
 

@@ -10,8 +10,11 @@ with 'Catmandu::Importer';
 use constant BASE_URL => 'http://www.ebi.ac.uk/europepmc/webservices/rest';
 
 has base => (is => 'ro', default => sub { return BASE_URL; });
+has source => (is => 'ro', default => sub { return "MED"; });
 has query => (is => 'ro', required => 1);
-has db_links => (is => 'ro');
+has module => (is => 'ro');
+has db => (is => 'ro');
+has page => (is => 'ro');
 
 # Returns the raw response object.
 sub _request {
@@ -33,8 +36,10 @@ sub _hashify {
   my ($self, $in) = @_;
 
   my $xs = XML::Simple->new();
-  my $out = $xs->XMLin(
-	  $in, SuppressEmpty => '', ForceArray => ['dbCrossReference'], KeyAttr => 'dbName'
+  my $out = $xs->XMLin($in, 
+    SuppressEmpty => '', 
+    ForceArray => ['dbCrossReference', 'reference', 'citation'], 
+    KeyAttr => 'dbName',
   );
 
   return $out;
@@ -46,10 +51,12 @@ sub _call {
 
   # construct the url
   my $url = $self->base;
-  if ($self->db_links) {
-    $url .= '/MED/' . $self->query . '/databaseLinks';
-  } else {
+  if ($self->module eq 'search') {
     $url .= '/search/query=' . $self->query;
+  } else {
+    $url .= '/'. $self->source .'/'. $self->query .'/'. $self->module;
+    $url .= '/'. $self->db if $self->db;
+    $url .= '/'. $self->page if $self->page;
   }
 
   # http get the url.
@@ -74,16 +81,30 @@ sub _get_record {
 
 sub generator {
   my ($self) = @_;
-  my $return = 1;
 
   return sub {
-  # hack to make iterator stop.
-  if ($return) {
-    $return = 0;
-    return $self->_get_record;
-  }
-  return undef;
+    $self->_get_record;
   };
+
+#  my $return = 1;
+  # return sub {
+  # # hack to make iterator stop.
+  # if ($return) {
+  #   $return = 0;
+  #   return $self->_get_record;
+  # }
+  # return undef;
+  # };
 }
 
 1;
+
+=head1 NAME
+
+  Catmandu::Importer::EBI
+
+=head2 API Documentation
+
+  http://www.ebi.ac.uk/europepmc/
+
+=cut
