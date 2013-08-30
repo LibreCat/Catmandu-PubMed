@@ -2,15 +2,15 @@ package Catmandu::PubMed;
 
 =head1 NAME
 
-Catmandu::PubMed - Catmandu module for working with PubMed data
+Catmandu::PubMed - A bunch of Catmandu modules for working with PubMed and EBI data
 
 =head1 VERSION
 
-Version 0.01
+Version 0.05
 
 =cut
 
-our $VERSION = '0.01';
+our $VERSION = '0.05';
 
 =head1 MODULES
 
@@ -18,13 +18,21 @@ our $VERSION = '0.01';
 
 =item * L<Catmandu::Importer::PubMed>
 
+=item * L<Catmandu::Importer::EBI>
+
+=item * L<Catmandu::Fix::ebi_filter>
+
+=item * L<Catmandu::Fix::ebi_dbLinks>
+
 =back
 
-=head1 AUTHOR
+=head1 AUTHORS
 
 =over
 
-=item * Wouter Willaert, C<< <wouterw@inuits.eu> >>
+=item * Wouter Willaert, C<< <wouterw at inuits.eu> >>
+
+=item * Vitali Peil, C<< <vitali.peil at uni-bielefeld.de> >>
 
 =back
 
