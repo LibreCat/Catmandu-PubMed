@@ -16,6 +16,10 @@ has module => (is => 'ro');
 has db => (is => 'ro');
 has page => (is => 'ro');
 
+my %MAP = (references => 'reference',
+  citations => 'citation',
+  dbCrossReference => 'dbCrossReference');
+
 # Returns the raw response object.
 sub _request {
   my ($self, $url) = @_;
@@ -36,10 +40,11 @@ sub _hashify {
   my ($self, $in) = @_;
 
   my $xs = XML::Simple->new();
+  my $field = $MAP{$self->module};
   my $out = $xs->XMLin($in, 
     SuppressEmpty => '', 
-    ForceArray => ['dbCrossReference', 'reference', 'citation'], 
-    KeyAttr => 'dbName',
+    ForceArray => [$field],
+    KeyAttr => [$field],
   );
 
   return $out;
@@ -101,10 +106,34 @@ sub generator {
 
 =head1 NAME
 
-  Catmandu::Importer::EBI
+  Catmandu::Importer::EBI - Package that imports EBI data.
 
-=head2 API Documentation
+=head1 API Documentation
 
-  http://www.ebi.ac.uk/europepmc/
+  This module use the REST service as described at http://www.ebi.ac.uk/europepmc/.
+
+=head1 SYNOPSIS
+
+  use Catmandu::Importer::EBI;
+
+  my %attrs = (
+    base => 'http://www.ebi.ac.uk/europepmc/webservices/rest',
+    source => 'MED',
+    query => 'malaria',
+    module => 'search',
+    db => 'EMBL',
+    page => '2',
+  );
+
+  my $importer = Catmandu::Importer::PubMed->new(%attrs);
+
+  my $n = $importer->each(sub {
+    my $hashref = $_[0];
+    # ...
+  });
+
+=head1 SEE ALSO
+
+L<Catmandu::Iterable>, L<Catmandu::Importer::PubMed>
 
 =cut

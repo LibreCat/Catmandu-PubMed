@@ -13,6 +13,9 @@ sub fix {
       hasReferences inEPMC inPMC)) {
     $data->{$_} = $hash->{$_} if $hash->{$_};
   }
+
+  $data->{citedByCount} = $data->{citedByCount} ||= 0;
+
   return $data;
 
 }
