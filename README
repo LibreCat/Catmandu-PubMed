@@ -15,3 +15,13 @@ After installing, you can find documentation for this module with the
 perldoc command.
 
   perldoc Catmandu::PubMed
+
+AUTHOR
+
+Wouter Willaert
+
+MAINTAINER
+
+Vitali Peil <vitali.peil at uni-bielefeld.de>
+Christian Pietsch <cpietsch+librecat at uni-bielefeld.de>
+
